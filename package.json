@@ -11,7 +11,12 @@
   "dependencies": {
     "20": "^1.0.0",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@primevuelab/themes": "^1.0.0",
+    "axios": "^1.10.0",
     "bootstrap": "^5.3.3",
+    "carousel": "^0.0.3",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.3.3",
     "swiper": "^11.2.6",
     "vue": "^3.5.13",
     "vue-multiselect": "^3.2.0",

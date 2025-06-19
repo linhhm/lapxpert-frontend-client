@@ -12,24 +12,75 @@
         </div>
 
         <div>
-          <label class="block font-semibold text-gray-700 mb-2">Hãng</label>
-          <multiselect v-model="filters.brand" :options="brandOptions" :allow-empty="true"
-            placeholder="Chọn hãng" class="w-full" label="label" track-by="value" />
-        </div>
+  <label class="block font-semibold text-gray-700 mb-2">Hãng</label>
+  <multiselect
+    v-model="filters.brand"
+    :options="brandOptions"
+    :allow-empty="true"
+    placeholder="Chọn hãng"
+    class="w-full"
+    label="label"
+    track-by="value"
+  />
+</div>
 
-        <div>
-          <label class="block font-semibold text-gray-700 mb-2">Khoảng giá (VND)</label>
-          <div class="space-y-3">
-            <div class="flex items-center gap-2">
-              <input type="range" v-model="filters.priceMin" min="0" max="60000000" step="1000000" class="flex-1 accent-blue-500" />
-              <span class="text-sm text-gray-700 font-medium">≥ {{ formatPrice(filters.priceMin) }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="range" v-model="filters.priceMax" min="0" max="60000000" step="1000000" class="flex-1 accent-blue-500" />
-              <span class="text-sm text-gray-700 font-medium">≤ {{ formatPrice(filters.priceMax) }}</span>
-            </div>
-          </div>
-        </div>
+
+  <div>
+  <label class="block font-semibold text-gray-700 mb-2">Khoảng giá (VND)</label>
+  <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 min-h-[140px]">
+    <!-- Giá hiển thị trên cùng -->
+    <div class="flex justify-between text-sm text-gray-600 font-medium">
+      <span>Tối thiểu: {{ formatPrice(minPriceGlobal) }}</span>
+      <span>Tối đa: {{ formatPrice(maxPriceGlobal) }}</span>
+    </div>
+
+    <!-- Ô nhập số -->
+    <div class="flex items-center justify-between gap-2">
+      <input
+        type="number"
+        v-model.number="filters.priceMin"
+        :min="minPriceGlobal"
+        :max="filters.priceMax - 1000000"
+        step="1000000"
+        class="w-1/2 p-2 rounded-lg border border-gray-300 text-sm"
+        placeholder="Từ"
+      />
+      <input
+        type="number"
+        v-model.number="filters.priceMax"
+        :min="filters.priceMin + 1000000"
+        :max="maxPriceGlobal"
+        step="1000000"
+        class="w-1/2 p-2 rounded-lg border border-gray-300 text-sm"
+        placeholder="Đến"
+      />
+    </div>
+
+    <!-- Slider đôi -->
+    <div class="flex items-center gap-2">
+      <input
+        type="range"
+        v-model.number="filters.priceMin"
+        :min="minPriceGlobal"
+        :max="filters.priceMax - 1000000"
+        step="1000000"
+        class="w-full accent-blue-500"
+      />
+      <input
+        type="range"
+        v-model.number="filters.priceMax"
+        :min="filters.priceMin + 1000000"
+        :max="maxPriceGlobal"
+        step="1000000"
+        class="w-full accent-blue-500"
+      />
+    </div>
+  </div>
+</div>
+
+
+
+
 
         <div>
           <label class="block font-semibold text-gray-700 mb-2">Tìm kiếm theo tên</label>
@@ -44,25 +95,35 @@
       </aside>
 
       <!-- Danh sách sản phẩm -->
-      <section class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="sp in paginatedProducts" :key="sp.id"
-          class="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between border border-gray-100">
-          <div>
-            <router-link :to="`/chiTietSanPham/${sp.id}`">
-            <img :src="sp.image" alt="" class="w-full h-40 object-contain mb-4 rounded-xl transition-transform hover:scale-105" /></router-link>
-            <h2 class="text-lg font-bold text-gray-800 line-clamp-2">{{ sp.name }}</h2>
-            <p class="text-gray-500 text-sm mb-1">{{ sp.brand }} - {{ sp.category }}</p>
-            <p class="text-blue-600 font-bold text-lg mb-3">{{ formatPrice(sp.price) }}</p>
-          </div>
-          <div class="flex gap-2 mt-auto">
-            <button @click="muaNgay(sp)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-semibold">Mua ngay</button>
-            <button @click="themVaoGio(sp)"
-              class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-1">
-              <i class="fa-solid fa-cart-shopping"></i> Giỏ
-            </button>
-          </div>
-        </div>
-      </section>
+      <!-- Danh sách sản phẩm -->
+<section class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div v-for="sp in products" :key="sp.id"
+    class="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between border border-gray-100">
+    <div>
+      <router-link :to="`/chiTietSanPham/${sp.id}`">
+<img :src="getImageUrl(sp.hinhAnh)" alt="" class="w-full h-40 object-contain mb-4 rounded-xl transition-transform hover:scale-105" />
+      </router-link>
+      <h2 class="text-lg font-bold text-gray-800 line-clamp-2">{{ sp.tenSanPham }}</h2>
+      <p class="text-gray-500 text-sm mb-1">
+        {{ sp.thuongHieu?.tenThuongHieu || 'Không rõ hãng' }}
+      </p>
+      <p class="text-blue-600 font-bold text-lg mb-3">
+  {{ formatPrice(getMinPrice(sp.chiTietSanPhams)) }} ₫ - {{ formatPrice(getMaxPrice(sp.chiTietSanPhams)) }} ₫
+</p>
+
+
+
+    </div>
+    <div class="flex gap-2 mt-auto">
+      <button @click="muaNgay(sp)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-semibold">Mua ngay</button>
+      <button @click="themVaoGio(sp)"
+        class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-1">
+        <i class="fa-solid fa-cart-shopping"></i> Giỏ
+      </button>
+    </div>
+  </div>
+</section>
+
     </div>
 
     <!-- Phân trang -->
@@ -75,10 +136,10 @@
     </div>
   </div>
 </template>
-
 <script>
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
+import axios from 'axios'
 
 export default {
   components: { Multiselect },
@@ -86,7 +147,16 @@ export default {
     return {
       currentPage: 1,
       itemsPerPage: 8,
-      filters: { priceMin: 0, priceMax: 60000000, category: null, brand: null, search: "" },
+      products: [],
+      minPriceGlobal: 0,
+      maxPriceGlobal: 60000000, // Sẽ được cập nhật sau khi fetch
+      filters: {
+        priceMin: 0,
+        priceMax: 60000000,
+        category: null,
+        brand: null,
+        search: ""
+      },
       categoryOptions: [
         { label: "Laptop Gaming", value: "gaming" },
         { label: "Laptop Văn phòng", value: "office" },
@@ -97,71 +167,112 @@ export default {
         { label: "Dell", value: "dell" },
         { label: "Apple", value: "mac" },
         { label: "MSI", value: "msi" }
-      ],
-      products: [
-        { id: 1, name: "Asus ROG Strix G15", brand: "asus", category: "gaming", price: 32000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
-        { id: 2, name: "Dell XPS 15", brand: "dell", category: "office", price: 45000000, image: "https://cdn.tgdd.vn/Products/Images/44/321192/dell-inspiron-15-3520-i5-25p231-2-2-750x500.jpg" },
-        { id: 3, name: "MacBook Pro M2 16 inch", brand: "mac", category: "macbook", price: 60000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 4, name: "MSI GF63 Thin", brand: "msi", category: "gaming", price: 25000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 5, name: "Asus ZenBook 14 OLED", brand: "asus", category: "office", price: 29000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
-        { id: 6, name: "Asus ROG Strix G15", brand: "asus", category: "gaming", price: 32000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
-        { id: 7, name: "Dell XPS 15", brand: "dell", category: "office", price: 45000000, image: "https://cdn.tgdd.vn/Products/Images/44/321192/dell-inspiron-15-3520-i5-25p231-2-2-750x500.jpg" },
-        { id: 8, name: "MacBook Pro M2 16 inch", brand: "mac", category: "macbook", price: 60000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 9, name: "MSI GF63 Thin", brand: "msi", category: "gaming", price: 25000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 10, name: "Asus ZenBook 14 OLED", brand: "asus", category: "office", price: 29000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
-        { id: 11, name: "Asus ROG Strix G15", brand: "asus", category: "gaming", price: 32000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
-        { id: 12, name: "Dell XPS 15", brand: "dell", category: "office", price: 45000000, image: "https://cdn.tgdd.vn/Products/Images/44/321192/dell-inspiron-15-3520-i5-25p231-2-2-750x500.jpg" },
-        { id: 13, name: "MacBook Pro M2 16 inch", brand: "mac", category: "macbook", price: 60000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 14, name: "MSI GF63 Thin", brand: "msi", category: "gaming", price: 25000000, image: "https://cdn.tgdd.vn/Products/Images/44/326861/msi-gf63-thin-12ve-i5-460vn-1-750x500.jpg" },
-        { id: 15, name: "Asus ZenBook 14 OLED", brand: "asus", category: "office", price: 29000000, image: "https://cdn.tgdd.vn/Products/Images/44/328235/asus-gaming-tuf-f15-fx507zc4-i5-hn330w-2-750x500.jpg" },
       ]
     };
   },
   computed: {
-  filteredProducts() {
-    return this.products.filter(sp => {
-      const matchCategory = !this.filters.category || sp.category === this.filters.category.value;
-      const matchBrand = !this.filters.brand || sp.brand === this.filters.brand.value;
-      const matchPrice = sp.price >= this.filters.priceMin && sp.price <= this.filters.priceMax;
-      const matchSearch = sp.name.toLowerCase().includes(this.filters.search.toLowerCase());
-      return matchCategory && matchBrand && matchPrice && matchSearch;
-    });
-  },
-  paginatedProducts() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return this.filteredProducts.slice(start, start + this.itemsPerPage);
-  },
-  totalPages() {
-    return Math.ceil(this.filteredProducts.length / this.itemsPerPage) || 1;
-  }
-},
-methods: {
-  formatPrice(value) {
-    return value.toLocaleString('vi-VN') + ' ₫';
-  },
-  resetFilters() {
-    this.filters = {
-      priceMin: 0,
-      priceMax: 60000000,
-      category: null,
-      brand: null,
-      search: ""
-    };
-    this.currentPage = 1;
-  },
-  changePage(page) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+    filteredProducts() {
+      return this.products.filter(sp => {
+        const matchCategory = true; // Tạm bỏ lọc category
+        const matchBrand = !this.filters.brand || sp.thuongHieu?.tenThuongHieu?.toLowerCase() === this.filters.brand.label.toLowerCase();
+        const matchPrice = sp.giaBan >= this.filters.priceMin && sp.giaBan <= this.filters.priceMax;
+        const matchSearch = sp.tenSanPham?.toLowerCase().includes(this.filters.search.toLowerCase());
+        return matchCategory && matchBrand && matchPrice && matchSearch;
+      });
+    },
+    paginatedProducts() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredProducts.slice(start, start + this.itemsPerPage);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredProducts.length / this.itemsPerPage) || 1;
     }
   },
-  muaNgay(sp) {
-    // Xử lý logic mua ngay ở đây
-    alert(`Mua ngay: ${sp.name}`);
+  methods: {
+    formatPrice(value) {
+      if (!value) return "0";
+      return new Intl.NumberFormat('vi-VN').format(value);
+    },
+    getMinPrice(list) {
+      if (!list || list.length === 0) return 0;
+      return Math.min(...list.map(ct => ct.giaBan || 0));
+    },
+    getMaxPrice(list) {
+      if (!list || list.length === 0) return 0;
+      return Math.max(...list.map(ct => ct.giaBan || 0));
+    },
+    resetFilters() {
+      this.filters = {
+        priceMin: this.minPriceGlobal,
+        priceMax: this.maxPriceGlobal,
+        category: null,
+        brand: null,
+        search: ""
+      };
+      this.currentPage = 1;
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+    muaNgay(sp) {
+      alert(`Mua ngay: ${sp.tenSanPham}`);
+    },
+    themVaoGio(sp) {
+      alert(`Đã thêm ${sp.tenSanPham} vào giỏ hàng`);
+    },
+    getImageUrl(imageStr) {
+      try {
+        const images = JSON.parse(imageStr);
+        if (!images || images.length === 0) return '/images/default.jpg';
+        if (images[0].startsWith('http')) return images[0];
+        return `http://localhost:8080/images/${images[0]}`;
+      } catch (e) {
+        return '/images/default.jpg';
+      }
+    },
+    async fetchProducts() {
+      try {
+        const res = await axios.get('http://localhost:8080/api/san-pham-online');
+        this.products = res.data;
+
+        const allPrices = res.data.flatMap(sp =>
+          (sp.chiTietSanPhams || []).map(ct => ct.giaBan || 0)
+        );
+
+        if (allPrices.length > 0) {
+          const min = Math.min(...allPrices);
+          const max = Math.max(...allPrices);
+          this.minPriceGlobal = min;
+          this.maxPriceGlobal = max;
+
+          // Gán vào filters ngay lần đầu load
+          this.filters.priceMin = min;
+          this.filters.priceMax = max;
+        }
+
+      } catch (err) {
+        console.error("Lỗi khi load sản phẩm từ backend:", err);
+      }
+    }
   },
-  themVaoGio(sp) {
-    // Xử lý logic thêm vào giỏ hàng ở đây
-    alert(`Đã thêm ${sp.name} vào giỏ hàng`);
+  watch: {
+    'filters.priceMin'(val) {
+      if (val > this.filters.priceMax) {
+        this.filters.priceMin = this.filters.priceMax;
+      }
+    },
+    'filters.priceMax'(val) {
+      if (val < this.filters.priceMin) {
+        this.filters.priceMax = this.filters.priceMin;
+      }
+    }
+  },
+  mounted() {
+    this.fetchProducts();
   }
 }
-}
 </script>
+
+
