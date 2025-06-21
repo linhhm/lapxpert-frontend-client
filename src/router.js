@@ -12,6 +12,7 @@ import TrangDotGiamGia from "../src/views/TrangDotGiamGia.vue";
 import HoTroKhachHang from "../src/views/HoTroKhachHang.vue";
 import Chat from "../src/views/Chat.vue";
 import GioHang from "../src/views/GioHang.vue";
+import ThanhToan from "../src/views/ThanhToan.vue";
 
 const routes = [
   { path: '/', component: home },
@@ -26,7 +27,8 @@ const routes = [
   { path: '/chitietsanPham', component: ChiTietSanPham },
   { path: '/hoTroKhachHang', component: HoTroKhachHang },
   { path: '/chat', component: Chat },
-  { path: '/gioHang', component: GioHang },
+  { path: '/gioHang',name: 'GioHang', component: GioHang },
+  { path: '/thanhToan',name: 'ThanhToan', component: ThanhToan },
   {
     path: '/chiTietSanPham/:id',
     component: ChiTietSanPham,
