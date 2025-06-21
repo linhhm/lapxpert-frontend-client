@@ -34,28 +34,35 @@
           </div>
 
           <!-- Hình ảnh + tên + mô tả -->
-<div class="flex items-center gap-3">
-  <img :src="getImageUrl(item.sanPhamChiTiet.hinhAnh)" alt="product image"
-    class="w-16 h-16 object-cover rounded-lg shadow-sm border border-indigo-200" />
-  <div>
-    <p class="font-semibold text-indigo-700 text-base">{{ item.sanPhamChiTiet.tenSanPham }}</p>
-    <p class="text-indigo-400 text-xs">
-      RAM: {{ item.sanPhamChiTiet.moTaRam }} |
-      CPU: {{ item.sanPhamChiTiet.moTaCpu }} |
-      Màu: {{ item.sanPhamChiTiet.moTaMauSac }}
-    </p>
+          <div class="flex items-center gap-3">
+            <img :src="getImageUrl(item.sanPhamChiTiet.hinhAnh)" alt="product image"
+              class="w-16 h-16 object-cover rounded-lg shadow-sm border border-indigo-200" />
+            <div>
+              <p class="font-semibold text-indigo-700 text-base">{{ item.sanPhamChiTiet.sanPham.tenSanPham }}</p>
+              <p class="text-indigo-400 text-xs">
+                RAM: {{ item.sanPhamChiTiet.ram.moTaRam }} |
+                CPU: {{ item.sanPhamChiTiet.cpu.moTaCpu }} |
+                Màu: {{ item.sanPhamChiTiet.mauSac.moTaMauSac }}
+              </p>
 
-    <div v-if="item.serialNumbers && item.serialNumbers.length > 0" class="text-xs text-indigo-600 mt-1">
-      Seri: {{ item.serialNumbers.join(', ') }}
-    </div>
-  </div>
-</div>
-
-          <!-- Giá -->
-          <div class="text-indigo-700 font-semibold">
-            {{ formatPrice(item.giaTaiThoiDiemThem) }}
+              <div v-if="item.serialNumbers && item.serialNumbers.length > 0" class="text-xs text-indigo-600 mt-1">
+                Seri: {{ item.serialNumbers.join(', ') }}
+              </div>
+            </div>
           </div>
 
+          <!-- Giá -->
+          <div>
+            <div class="text-indigo-700 font-semibold" v-if="item.giaTaiThoiDiemThem < item.sanPhamChiTiet.giaBan">
+              {{ formatPrice(item.giaTaiThoiDiemThem) }}
+              <p class="text-sm text-gray-400 line-through ml-1">
+                {{ formatPrice(item.sanPhamChiTiet.giaBan) }}
+              </p>
+            </div>
+            <div class="text-indigo-700 font-semibold" v-else>
+              {{ formatPrice(item.giaTaiThoiDiemThem) }}
+            </div>
+          </div>
           <!-- Số lượng -->
           <div class="flex items-center gap-3">
             <button @click="updateQuantity(item.sanPhamChiTiet.id, item.soLuong - 1)"
@@ -131,15 +138,15 @@ export default {
   },
   methods: {
     getImageUrl(imageStr) {
-  try {
-    const imgs = JSON.parse(imageStr);
-    if (!imgs || imgs.length === 0) return '/images/default.jpg';
-    if (imgs[0].startsWith('http')) return imgs[0];
-    return `http://localhost:8080/images/${imgs[0]}`;
-  } catch {
-    return '/images/default.jpg';
-  }
-},
+      try {
+        const imgs = JSON.parse(imageStr);
+        if (!imgs || imgs.length === 0) return '/images/default.jpg';
+        if (imgs[0].startsWith('http')) return imgs[0];
+        return `http://localhost:8080/images/${imgs[0]}`;
+      } catch {
+        return '/images/default.jpg';
+      }
+    },
     formatPrice(v) {
       return v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
     },
@@ -171,23 +178,23 @@ export default {
         ? this.cartItems.map(i => i.sanPhamChiTiet.id)
         : [];
     },
-     proceedToCheckout() {
-    if (this.selectedItems.length === 0) {
-      alert("Bạn chưa chọn sản phẩm nào để thanh toán");
-      return;
-    }
-    // Chuyển trang sang Thanh Toán, truyền id sản phẩm qua query param
-    this.$router.push({
-      name: 'ThanhToan', // tên route trang thanh toán, bạn đặt sao cũng được
-      query: {
-        sanPhamIds: this.selectedItems.join(',')
+    proceedToCheckout() {
+      if (this.selectedItems.length === 0) {
+        alert("Bạn chưa chọn sản phẩm nào để thanh toán");
+        return;
       }
-    });
-  }
+      // Chuyển trang sang Thanh Toán, truyền id sản phẩm qua query param
+      this.$router.push({
+        name: 'ThanhToan', // tên route trang thanh toán, bạn đặt sao cũng được
+        query: {
+          sanPhamIds: this.selectedItems.join(',')
+        }
+      });
+    }
   },
   async mounted() {
-      await this.gioHangStore.fetchItems();
-  console.log('Cart Items:', this.cartItems);
+    await this.gioHangStore.fetchItems();
+    console.log('Cart Items:', this.cartItems);
   },
 };
 </script>

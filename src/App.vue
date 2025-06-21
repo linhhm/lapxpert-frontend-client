@@ -2,11 +2,11 @@
   <div>
     <Navbar />
     <router-view />
-     <div id="chatbot-button"
+     <!-- <div id="chatbot-button"
             class="fixed bottom-4 right-4 bg-indigo-400 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-indigo-500 transition"
             @click="toggleChat">
             <i class="fas fa-robot text-2xl"></i>
-        </div>
+        </div> -->
     <Footer />
   </div>
 </template>

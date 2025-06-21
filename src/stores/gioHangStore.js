@@ -14,6 +14,19 @@ export const useGioHangStore = defineStore('gioHang', {
         items: [],
     }),
     actions: {
+        getGioHangId() {
+            if (!this.gioHangId) {
+                const storedId = localStorage.getItem('gioHangId');
+                if (storedId && !isNaN(Number(storedId))) {
+                    this.gioHangId = Number(storedId);
+                } else {
+                    const newId = Date.now();
+                    this.gioHangId = newId;
+                    localStorage.setItem('gioHangId', newId.toString());
+                }
+            }
+            return this.gioHangId;
+        },
         async fetchItems() {
             try {
                 // Tạo hoặc lấy ID từ localStorage
