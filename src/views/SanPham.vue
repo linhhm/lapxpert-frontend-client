@@ -130,21 +130,15 @@
           </div>
 
           <div>
-  <label class="font-semibold text-gray-700 block mb-1">Màu sắc</label>
-  <div class="flex flex-wrap gap-3">
-    <div
-      v-for="color in uniqueColorsWithLabel"
-      :key="color.id"
-      :title="color.name"
-      @click="selectedColor = color.id"
-      :class="[
-        'w-8 h-8 rounded-full cursor-pointer border-2',
-        selectedColor === color.id ? 'border-blue-600' : 'border-gray-300'
-      ]"
-      :style="{ backgroundColor: getColorHex(color.name) }"
-    ></div>
-  </div>
-</div>
+            <label class="font-semibold text-gray-700 block mb-1">Màu sắc</label>
+            <div class="flex flex-wrap gap-3">
+              <div v-for="color in uniqueColorsWithLabel" :key="color.id" :title="color.name"
+                @click="selectedColor = color.id" :class="[
+                  'w-8 h-8 rounded-full cursor-pointer border-2',
+                  selectedColor === color.id ? 'border-blue-600' : 'border-gray-300'
+                ]" :style="{ backgroundColor: getColorHex(color.name) }"></div>
+            </div>
+          </div>
 
           <div>
             <label class="font-semibold text-gray-700 block mb-1">CPU</label>
@@ -195,7 +189,9 @@ import 'vue-multiselect/dist/vue-multiselect.min.css'
 import { useProductStore } from '../stores/SanPhamstore'
 import { useChiTietSanPhamStore } from '../stores/chiTietSanPhamStore'
 import { mapState } from 'pinia'
+import { useMuaNgayStore } from '../stores/muaNgayStore';
 import { useGioHangStore } from '../stores/gioHangStore';
+
 
 
 export default {
@@ -207,6 +203,7 @@ export default {
 
     return {
       productStore,
+      dangMuaNgay: false,
       chiTietSanPhamStore,
       gioHangStore,
       showPanel: false,
@@ -351,20 +348,20 @@ export default {
     }
   },
   methods: {
-     getColorHex(name) {
-    const mapColor = {
-      "Đỏ": "#ff4d4f",
-      "Xanh lá": "#52c41a",
-      "Xanh dương": "#1890ff",
-      "Đen": "#000000",
-      "Trắng": "#ffffff",
-      "Vàng": "#fadb14",
-      "Tím": "#722ed1",
-      "Cam": "#fa8c16",
-      // ... thêm màu khác nếu cần
-    };
-    return mapColor[name] || "#ccc"; // fallback màu xám nhạt nếu không tìm thấy
-  },
+    getColorHex(name) {
+      const mapColor = {
+        "Đỏ": "#ff4d4f",
+        "Xanh lá": "#52c41a",
+        "Xanh dương": "#1890ff",
+        "Đen": "#000000",
+        "Trắng": "#ffffff",
+        "Vàng": "#fadb14",
+        "Tím": "#722ed1",
+        "Cam": "#fa8c16",
+        // ... thêm màu khác nếu cần
+      };
+      return mapColor[name] || "#ccc"; // fallback màu xám nhạt nếu không tìm thấy
+    },
     formatPrice(value) {
       if (!value) return "0";
       return new Intl.NumberFormat('vi-VN').format(value);
@@ -377,45 +374,53 @@ export default {
       if (!list || list.length === 0) return 0;
       return Math.max(...list.map(ct => ct.giaBan || 0));
     },
-async xacNhanCauHinh() {
-  if (!this.selectedRam || !this.selectedColor || !this.selectedCpu || !this.selectedGpu || !this.selectedBoNho) {
-    alert("Vui lòng chọn đầy đủ cấu hình!");
-    return;
-  }
+    async xacNhanCauHinh() {
+      if (!this.selectedRam || !this.selectedColor || !this.selectedCpu || !this.selectedGpu || !this.selectedBoNho) {
+        alert("Vui lòng chọn đầy đủ cấu hình!");
+        return;
+      }
 
-  if (!this.selectedOption) {
-    alert("Không tìm thấy cấu hình phù hợp!");
-    return;
-  }
+      if (!this.selectedOption) {
+        alert("Không tìm thấy cấu hình phù hợp!");
+        return;
+      }
 
-  // Kiểm tra tồn kho
-  if (this.selectedOption.soLuongTon === 0) {
-    alert("Sản phẩm bạn chọn đã hết hàng!");
-    return;
-  }
+      if (this.selectedOption.soLuongTon === 0) {
+        alert("Sản phẩm bạn chọn đã hết hàng!");
+        return;
+      }
 
-  // Tùy chọn: Kiểm tra đã tồn tại trong giỏ và cộng dồn có vượt quá số lượng tồn kho không
-  const cartItem = this.gioHangStore.items.find(i => i.sanPhamChiTiet.id === this.selectedOption.id);
-  const existingQty = cartItem ? cartItem.soLuong : 0;
-  if (existingQty + 1 > this.selectedOption.soLuongTon) {
-    alert(`Chỉ còn ${this.selectedOption.soLuongTon} sản phẩm trong kho!`);
-    return;
-  }
+      if (this.dangMuaNgay) {
+        // ✅ Không thêm vào giỏ, lưu vào store và chuyển hướng
+        const muaNgayStore = useMuaNgayStore();
+        const option = { ...this.selectedOption, sanPham: this.sanPhamDangChon };
+        muaNgayStore.setMuaNgaySanPham(option);
 
-  if (!this.gioHangStore.gioHangId) {
-    await this.gioHangStore.fetchItems(); // sẽ tạo nếu chưa có
-  }
+        this.showPanel = false;
+        this.$router.push("/thanhToan");
+        return;
+      }
 
-  this.gioHangStore.themSP(this.selectedOption.id)
-    .then(() => {
-      alert("Đã thêm sản phẩm vào giỏ!");
-      this.showPanel = false;
-    })
-    .catch(err => {
-      console.error("Lỗi khi thêm vào giỏ:", err);
-      alert("Thêm vào giỏ thất bại!");
-    });
-},
+      try {
+        if (!this.gioHangStore.gioHangId) {
+          await this.gioHangStore.fetchItems(); // tạo mới nếu chưa có
+        }
+
+        const cartItem = this.gioHangStore.items.find(i => i.sanPhamChiTiet.id === this.selectedOption.id);
+        const existingQty = cartItem ? cartItem.soLuong : 0;
+        if (existingQty + 1 > this.selectedOption.soLuongTon) {
+          alert(`Chỉ còn ${this.selectedOption.soLuongTon} sản phẩm trong kho!`);
+          return;
+        }
+
+        await this.gioHangStore.themSP(this.selectedOption.id);
+        this.showPanel = false;
+        alert("Đã thêm sản phẩm vào giỏ!");
+      } catch (err) {
+        console.error("Lỗi khi thêm vào giỏ:", err);
+        alert("Thêm vào giỏ thất bại!");
+      }
+    },
     async fetchChiTietSanPham(sanPhamId) {
       this.isLoadingChiTiet = true;
       try {
@@ -464,12 +469,13 @@ async xacNhanCauHinh() {
       }
     },
     async muaNgay(sp) {
+      this.dangMuaNgay = true; // đánh dấu là hành động mua ngay
       this.sanPhamDangChon = sp;
       await this.fetchChiTietSanPham(sp.id);
       this.showPanel = true;
     },
-
     async themVaoGio(sp) {
+      this.dangMuaNgay = false; // không phải mua ngay
       this.sanPhamDangChon = sp;
       await this.fetchChiTietSanPham(sp.id);
       this.showPanel = true;

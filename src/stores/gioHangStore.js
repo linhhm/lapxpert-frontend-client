@@ -4,9 +4,9 @@ import {
     themVaoGio,
     capNhatSoLuong,
     xoaSanPham,
-    xoaHetGio
+    xoaHetGio,
+    taoGioHangMoi
 } from '../apis/gioHangApi';
-
 
 export const useGioHangStore = defineStore('gioHang', {
     state: () => ({
@@ -14,51 +14,53 @@ export const useGioHangStore = defineStore('gioHang', {
         items: [],
     }),
     actions: {
-        getGioHangId() {
-            if (!this.gioHangId) {
-                const storedId = localStorage.getItem('gioHangId');
-                if (storedId && !isNaN(Number(storedId))) {
-                    this.gioHangId = Number(storedId);
-                } else {
-                    const newId = Date.now();
-                    this.gioHangId = newId;
-                    localStorage.setItem('gioHangId', newId.toString());
-                }
+        async taoGioHangMoi() {
+            try {
+                const res = await taoGioHangMoi();  // Gọi API tạo giỏ hàng mới
+                this.gioHangId = res.data;  // Lưu ID giỏ hàng vào state
+                localStorage.setItem('gioHangId', this.gioHangId.toString());  // Lưu giỏ hàng vào localStorage
+                console.log('Giỏ hàng mới đã được tạo:', this.gioHangId);
+            } catch (err) {
+                console.error('Không thể tạo giỏ hàng mới:', err);
+                alert('Không thể tạo giỏ hàng mới.');
             }
-            return this.gioHangId;
         },
         async fetchItems() {
             try {
-                // Tạo hoặc lấy ID từ localStorage
-                if (!this.gioHangId) {
-                    const storedId = localStorage.getItem('gioHangId');
-                    if (storedId && !isNaN(Number(storedId))) {
-                        this.gioHangId = Number(storedId);
-                    } else {
-                        const newId = Date.now(); // Số nguyên long giả lập
-                        this.gioHangId = newId;
-                        localStorage.setItem('gioHangId', newId.toString());
-                    }
-                }
+                await this.getOrCreateGioHangId();
                 const res = await getGioHang(this.gioHangId);
-                this.items = res.data; // danh sách chi tiết giỏ hàng
+                this.items = res.data;
             } catch (e) {
-                console.error("Lỗi fetch giỏ hàng:", e);
+                console.error("Lỗi khi fetch giỏ hàng:", e);
+                alert("Không thể tải giỏ hàng. Vui lòng thử lại!");
             }
         },
+        
         async themSP(spctId) {
-            await themVaoGio(this.gioHangId, spctId); // ✅ this.gioHangId phải có giá trị
-            await this.fetchItems();
+            try {
+                await this.getOrCreateGioHangId();  // Đảm bảo rằng gioHangId đã được tạo hoặc lấy đúng cách
+                await themVaoGio(this.gioHangId, spctId);  // Thêm sản phẩm vào giỏ
+                await this.fetchItems();  // Cập nhật danh sách sản phẩm trong giỏ hàng
+            } catch (e) {
+                console.error("Lỗi khi thêm sản phẩm vào giỏ:", e);
+                alert("Có lỗi khi thêm sản phẩm vào giỏ hàng.");
+            }
         },
+
         async updateQuantity(spctId, soLuong) {
+            await this.getOrCreateGioHangId();
             await capNhatSoLuong(this.gioHangId, spctId, soLuong);
             await this.fetchItems();
         },
+
         async removeItem(spctId) {
+            await this.getOrCreateGioHangId();
             await xoaSanPham(this.gioHangId, spctId);
             await this.fetchItems();
         },
+
         async clearCart() {
+            await this.getOrCreateGioHangId();
             await xoaHetGio(this.gioHangId);
             this.items = [];
         }

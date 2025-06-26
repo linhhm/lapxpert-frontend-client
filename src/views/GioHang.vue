@@ -193,8 +193,9 @@ export default {
     }
   },
   async mounted() {
-    await this.gioHangStore.fetchItems();
-    console.log('Cart Items:', this.cartItems);
-  },
+  await this.gioHangStore.fetchItems();
+  console.log('Cart Items:', this.cartItems);
+  console.log('GioHangId đang dùng:', this.gioHangStore.gioHangId); // 👈 Thêm dòng này
+}
 };
 </script>

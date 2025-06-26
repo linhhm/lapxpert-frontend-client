@@ -3,10 +3,13 @@ import api from './axios';
 export const getGioHang = (gioHangId) => {
   return api.get(`/gio-hang/${gioHangId}`);
 };
+export const taoGioHangMoi = () => {
+  return api.post('/gio-hang/tao-moi');
+};
 
 export const themVaoGio = (gioHangId, sanPhamChiTietId) => {
   return api.post(`/gio-hang/them`, null, {
-    params: { gioHangId, sanPhamChiTietId }
+    params: { gioHangId, sanPhamChiTietId }  // Đảm bảo bạn truyền đúng các tham số
   });
 };
 
@@ -26,4 +29,5 @@ export const xoaHetGio = (gioHangId) => {
   return api.delete(`/gio-hang/xoa-het`, {
     params: { gioHangId }
   });
+  
 };

@@ -7,7 +7,7 @@
         </div>
 
         <!-- Các khối hỗ trợ -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-10 max-w-6xl mx-auto">
             <!-- Hotline -->
             <div class="p-6 bg-white shadow-md rounded-2xl text-center hover:shadow-xl transition hover:scale-105">
                 <i class="text-5xl text-indigo-400 fas fa-phone animate-wiggle"></i>
@@ -31,6 +31,14 @@
                 <p class="mt-2 text-gray-600">Nhấn <span class="text-purple-600 font-bold">tại đây</span> để trò chuyện
                     nhé!</p>
             </div>
+            <!-- Tra cứu đơn hàng -->
+            <div @click="scrollToTraCuu"
+                class="p-6 bg-white shadow-md rounded-2xl text-center hover:shadow-xl transition hover:scale-105 cursor-pointer">
+                <i class="text-5xl text-pink-400 fas fa-search animate-wiggle"></i>
+                <h3 class="mt-4 text-xl font-semibold text-gray-800">🛍 Tra cứu đơn</h3>
+                <p class="mt-2 text-gray-600">Xem thông tin đơn hàng của bạn cực nhanh ✨</p>
+            </div>
+
         </div>
 
         <!-- Nút nổi Chatbot -->
@@ -118,6 +126,9 @@ export default {
         };
     },
     methods: {
+        scrollToTraCuu() {
+            this.$router.push('/traCuuDon');
+        },
         toggleChat() {
             this.isChatOpen = !this.isChatOpen;
         },
