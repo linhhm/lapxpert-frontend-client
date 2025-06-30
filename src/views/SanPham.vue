@@ -66,7 +66,6 @@
       </aside>
 
       <!-- Danh sách sản phẩm -->
-      <!-- Danh sách sản phẩm -->
       <section class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="sp in products" :key="sp.id"
           class="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between border border-gray-100">
@@ -155,6 +154,18 @@
             </select>
           </div>
           <div>
+            <label class="font-semibold text-gray-700 block mb-1">Số lượng</label>
+            <div class="flex items-center gap-2">
+              <button @click="soLuongChon = Math.max(1, soLuongChon - 1)"
+                class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold flex items-center justify-center">-</button>
+              <input type="number" v-model.number="soLuongChon" min="1" :max="selectedOption?.soLuongTon || 1"
+                class="w-16 text-center border border-gray-300 rounded-lg py-1 px-2" />
+              <button @click="soLuongChon = Math.min((selectedOption?.soLuongTon || 1), soLuongChon + 1)"
+                class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold flex items-center justify-center">+</button>
+            </div>
+          </div>
+
+          <div>
             <label class="font-semibold text-gray-700 block mb-1">BoNho</label>
             <select v-model="selectedBoNho" class="w-full border p-2 rounded-lg">
               <option disabled value="">Chọn BoNho</option>
@@ -202,6 +213,7 @@ export default {
     const gioHangStore = useGioHangStore();
 
     return {
+      soLuongChon: 1,
       productStore,
       dangMuaNgay: false,
       chiTietSanPhamStore,
@@ -389,13 +401,16 @@ export default {
         alert("Sản phẩm bạn chọn đã hết hàng!");
         return;
       }
-
       if (this.dangMuaNgay) {
-        // ✅ Không thêm vào giỏ, lưu vào store và chuyển hướng
         const muaNgayStore = useMuaNgayStore();
-        const option = { ...this.selectedOption, sanPham: this.sanPhamDangChon };
-        muaNgayStore.setMuaNgaySanPham(option);
+        const option = {
+          ...this.selectedOption,
+          sanPham: this.sanPhamDangChon,
+          soLuong: this.soLuongChon // 🟢 Thêm dòng này
+        };
 
+        muaNgayStore.setMuaNgaySanPham(option);
+        localStorage.setItem("muaNgayTam", JSON.stringify(option)); // Lưu lại cả số lượng
         this.showPanel = false;
         this.$router.push("/thanhToan");
         return;
@@ -478,6 +493,7 @@ export default {
       this.dangMuaNgay = false; // không phải mua ngay
       this.sanPhamDangChon = sp;
       await this.fetchChiTietSanPham(sp.id);
+      this.soLuongChon = 1;
       this.showPanel = true;
     },
     getImageUrl(imageStr) {

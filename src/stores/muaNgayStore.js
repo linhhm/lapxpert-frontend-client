@@ -26,5 +26,6 @@ export const useMuaNgayStore = defineStore('muaNgay', {
                 throw e;
             }
         }
-    }
+    },
+    persist: true
 });

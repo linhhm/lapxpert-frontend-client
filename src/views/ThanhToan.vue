@@ -222,6 +222,10 @@
 
 
             <div class="text-right">
+                <button @click="chonThemSanPham"
+                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-semibold">
+                    Chọn thêm sản phẩm
+                </button>
                 <button @click="huyThanhToan"
                     class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold rounded-md">
                     Hủy
@@ -241,6 +245,7 @@ import { laySerialTamThoi } from '../apis/thanhToanApi';
 import { getProvinces, getDistricts, getWards } from '../apis/ghnApi';
 import { getVoucherByCode } from '../apis/phieuGiamGiaApi';
 import { useMuaNgayStore } from '../stores/muaNgayStore';
+import { onMounted, nextTick } from 'vue';
 
 
 import axios from '../apis/axios';
@@ -274,6 +279,37 @@ export default {
             showAddressForm: false
         };
     },
+    mounted: async function () {
+        await nextTick(); // Chờ store khởi tạo xong sau F5
+
+        const idsStr = this.$route.query.sanPhamIds;
+
+        if (idsStr) {
+            // Trường hợp từ giỏ hàng
+            this.selectedIds = idsStr.split(',').map(id => Number(id));
+            await this.loadSelectedItems();
+        } else if (this.muaNgayStore.muaNgaySanPham) {
+            // Trường hợp từ "mua ngay"
+            const sp = this.muaNgayStore.muaNgaySanPham;
+            const soLuong = sp.soLuong || 1; // ✅ Ưu tiên lấy từ store nếu có
+            this.selectedItems = [{
+                sanPhamChiTiet: sp,
+                soLuong,
+                giaTaiThoiDiemThem: sp.giaKhuyenMai || sp.giaBan,
+
+            }];
+
+            try {
+                const res = await laySerialTamThoi(sp.id, 1);
+                this.selectedItems[0].serialNumbers = res.data;
+            } catch (err) {
+                console.error("Lỗi lấy serial sản phẩm mua ngay:", err);
+                this.selectedItems[0].serialNumbers = [];
+            }
+        }
+
+        await this.fetchProvinces();
+    },
     computed: {
         muaNgayStore() {
             return useMuaNgayStore(); // ✅ Bổ sung dòng này
@@ -299,6 +335,9 @@ export default {
         }
     },
     methods: {
+        chonThemSanPham() {
+            this.$router.push({ name: 'SanPham' }); // hoặc name router phù hợp với trang danh sách sản phẩm
+        },
         async apDungMaGiamGia() {
             if (!this.maGiamGia) return;
 
@@ -372,7 +411,8 @@ export default {
             }
         },
         huyThanhToan() {
-            this.$router.push({ name: 'GioHang' });
+            this.muaNgayStore.clearMuaNgaySanPham(); // ✅ xoá khi huỷ
+            this.$router.push({ name: 'SanPham' });
         },
         async apDungMaGiamGia() {
             if (!this.maGiamGia) return;
@@ -414,7 +454,7 @@ export default {
                     res = await this.muaNgayStore.muaNgay({
                         ...request,
                         sanPhamChiTietId: this.muaNgayStore.muaNgaySanPham.id,
-                        soLuong: 1
+                        soLuong: this.muaNgayStore.muaNgaySanPham.soLuong || 1
                     });
                     this.muaNgayStore.clearMuaNgaySanPham();
                 } else {
@@ -434,41 +474,14 @@ export default {
                 }
                 alert("Thanh toán thành công!");
                 this.$router.push({
-                    name: 'SanPham',
-                    query: { maHoaDon: res.maHoaDon }
+                    name: 'ThanhToanThanhCong',
+                    params: { maHoaDon: res.maHoaDon }
                 });
             } catch (err) {
                 alert("Thanh toán thất bại. Vui lòng thử lại!");
                 console.error("Lỗi khi thanh toán:", err);
             }
         }
-    },
-    async created() {
-        const idsStr = this.$route.query.sanPhamIds;
-
-        if (idsStr) {
-            // Trường hợp từ giỏ hàng
-            this.selectedIds = idsStr.split(',').map(id => Number(id));
-            await this.loadSelectedItems();
-        } else if (this.muaNgayStore.muaNgaySanPham) {
-            // Trường hợp từ "mua ngay"
-            const sp = this.muaNgayStore.muaNgaySanPham;
-            this.selectedItems = [{
-                sanPhamChiTiet: sp,
-                soLuong: 1,
-                giaTaiThoiDiemThem: sp.giaKhuyenMai || sp.giaBan,
-            }];
-
-            try {
-                const res = await laySerialTamThoi(sp.id, 1);
-                this.selectedItems[0].serialNumbers = res.data;
-            } catch (err) {
-                console.error("Lỗi lấy serial sản phẩm mua ngay:", err);
-                this.selectedItems[0].serialNumbers = [];
-            }
-        }
-
-        await this.fetchProvinces();
     },
 
     watch: {

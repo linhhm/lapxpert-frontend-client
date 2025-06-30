@@ -98,6 +98,13 @@
                     </div>
                 </div>
             </div>
+            <!-- Nút hủy đơn hàng nếu còn chờ xác nhận -->
+            <div v-if="hoaDon.trangThai === 'CHO_XAC_NHAN'" class="mt-2 flex justify-end">
+                <button @click="huyDonHang"
+                    class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition-all duration-200">
+                    Hủy đơn hàng
+                </button>
+            </div>
 
             <!-- Thông tin đơn hàng -->
             <div class="space-y-4" v-if="hoaDon">
@@ -105,6 +112,7 @@
                     <p>Mã hóa đơn: <strong>{{ hoaDon.maHoaDon }}</strong></p>
                     <p>Ngày đặt: {{ formatDate(hoaDon.ngayTao) }}</p>
                     <p>Trạng thái: <span :class="getStatusClass(hoaDon.trangThai)">{{ hoaDon.trangThai }}</span></p>
+
                 </div>
 
                 <!-- Sản phẩm -->
@@ -112,9 +120,24 @@
                     <div v-for="ct in hoaDon.chiTietHoaDons" :key="ct.id"
                         class="flex justify-between items-center bg-purple-50 border border-purple-200 p-3 rounded-md shadow-sm">
                         <div>
-                            <p class="text-indigo-900 font-semibold">{{ ct.sanPhamChiTiet.sanPham.tenSanPham }}</p>
+                            <p class="text-indigo-900 font-semibold">{{ ct.tenSanPham }}</p>
+                            <p class="text-sm text-indigo-500">
+                            RAM: {{ ct.sanPhamChiTiet?.ram?.moTaRam || ct.sanPhamChiTiet?.moTaRam || 'N/A' }} 
+                            <!-- CPU: {{ ct.sanPhamChiTiet.cpu?.moTaCpu || ct.sanPhamChiTiet.moTaCpu || 'N/A' }} |
+                            Màu: {{ ct.sanPhamChiTiet.mauSac?.moTaMauSac || ct.sanPhamChiTiet.moTaMauSac || 'N/A' }} -->
+                        </p>
                             <p class="text-sm text-gray-600">Số lượng: {{ ct.soLuong }}</p>
+
                             <p class="text-sm text-gray-600">Đơn giá: {{ formatPrice(ct.gia) }}</p>
+
+                            <!-- THÊM: danh sách serial -->
+                            <div v-if="ct.serialNumbers && ct.serialNumbers.length" class="mt-1">
+                                <p class="text-xs text-gray-500">Serials:</p>
+                                <ul class="list-disc list-inside text-sm text-indigo-800">
+                                    <li v-for="(serial, idx) in ct.serialNumbers" :key="idx">{{ serial }}</li>
+                                </ul>
+                            </div>
+
                         </div>
                         <div class="text-right text-blue-700 font-semibold">
                             {{ formatPrice(ct.soLuong * ct.gia) }}
@@ -175,104 +198,65 @@
     </div>
 </template>
 <script>
+import { useHoaDonStore } from '../stores/HoaDonStore';
+import { useRoute } from 'vue-router';
+
 export default {
     data() {
         return {
             showTimeline: false,
-            fakeTimeline: [
-                { trangThai: 'CHO_XAC_NHAN', label: 'Chờ xác nhận', thoiGian: '2025-06-22T09:00:00' },
-                { trangThai: 'DA_XAC_NHAN', label: 'Đã xác nhận', thoiGian: '2025-06-22T10:00:00' },
-                { trangThai: 'DANG_XU_LY', label: 'Đang xử lý', thoiGian: '2025-06-22T11:00:00' },
-                { trangThai: 'CHO_GIAO_HANG', label: 'Chờ giao hàng', thoiGian: '2025-06-22T13:00:00' },
-                { trangThai: 'DANG_GIAO_HANG', label: 'Đang giao hàng', thoiGian: '2025-06-22T15:00:00' },
-                { trangThai: 'DA_GIAO_HANG', label: 'Đã giao hàng', thoiGian: '2025-06-22T18:00:00' },
-                { trangThai: 'HOAN_THANH', label: 'Hoàn thành', thoiGian: '2025-06-22T20:00:00' }
-            ],
-            hoaDon: {
-                maHoaDon: 'HD999999',
-                ngayTao: new Date().toISOString(),
-                trangThai: 'CHO_XAC_NHAN',
-                tongTien: 35000000,
-                chiTietHoaDons: [
-                    {
-                        id: 1,
-                        soLuong: 1,
-                        gia: 15000000,
-                        sanPhamChiTiet: {
-                            sanPham: {
-                                tenSanPham: 'Laptop Asus Zenbook'
-                            }
-                        }
-                    },
-                    {
-                        id: 2,
-                        soLuong: 2,
-                        gia: 10000000,
-                        sanPhamChiTiet: {
-                            sanPham: {
-                                tenSanPham: 'Màn hình LG 24 inch'
-                            }
-                        }
-                    }
-                ]
-            },
             trangThaiSteps: [
-                { label: 'Chờ xác nhận', value: 'CHO_XAC_NHAN', icon: 'fas fa-clock' },
-                { label: 'Đã xác nhận', value: 'DA_XAC_NHAN', icon: 'fas fa-check-circle' },
-                { label: 'Đang xử lý', value: 'DANG_XU_LY', icon: 'fas fa-cogs' },
-                { label: 'Chờ giao hàng', value: 'CHO_GIAO_HANG', icon: 'fas fa-truck-loading' },
-                { label: 'Đang giao hàng', value: 'DANG_GIAO_HANG', icon: 'fas fa-shipping-fast' },
-                { label: 'Đã giao hàng', value: 'DA_GIAO_HANG', icon: 'fas fa-box' },
-                { label: 'Hoàn thành', value: 'HOAN_THANH', icon: 'fas fa-smile' }
-            ],
-            testStatuses: [
-                { label: 'Chờ xác nhận', value: 'CHO_XAC_NHAN', class: 'bg-yellow-500' },
-                { label: 'Đã xác nhận', value: 'DA_XAC_NHAN', class: 'bg-blue-400' },
-                { label: 'Đang xử lý', value: 'DANG_XU_LY', class: 'bg-indigo-500' },
-                { label: 'Chờ giao hàng', value: 'CHO_GIAO_HANG', class: 'bg-indigo-600' },
-                { label: 'Đang giao hàng', value: 'DANG_GIAO_HANG', class: 'bg-blue-600' },
-                { label: 'Đã giao hàng', value: 'DA_GIAO_HANG', class: 'bg-green-500' },
-                { label: 'Hoàn thành', value: 'HOAN_THANH', class: 'bg-green-700' },
-                { label: 'Yêu cầu trả', value: 'YEU_CAU_TRA_HANG', class: 'bg-yellow-600' },
-                { label: 'Đã trả hàng', value: 'DA_TRA_HANG', class: 'bg-purple-600' },
-                { label: 'Trả không thành công', value: 'TRA_HANG_KHONG_THANH_CONG', class: 'bg-red-600' },
-                { label: 'Đã hoàn tiền', value: 'DA_HOAN_TIEN', class: 'bg-green-500' },
-                { label: 'Đã hủy', value: 'DA_HUY', class: 'bg-red-700' }
+                { value: 'CHO_XAC_NHAN', label: 'Chờ xác nhận', icon: 'fas fa-hourglass-half' },
+                { value: 'DA_XAC_NHAN', label: 'Đã xác nhận', icon: 'fas fa-check-circle' },
+                { value: 'DANG_XU_LY', label: 'Đang xử lý', icon: 'fas fa-cogs' },
+                { value: 'CHO_GIAO_HANG', label: 'Chờ giao hàng', icon: 'fas fa-box' },
+                { value: 'DANG_GIAO_HANG', label: 'Đang giao hàng', icon: 'fas fa-shipping-fast' },
+                { value: 'DA_GIAO_HANG', label: 'Đã giao hàng', icon: 'fas fa-box-open' },
+                { value: 'HOAN_THANH', label: 'Hoàn thành', icon: 'fas fa-check-double' }
             ]
         };
     },
+    setup() {
+        const hoaDonStore = useHoaDonStore();
+        const route = useRoute();
+        const maHoaDon = route.params.maHoaDon;
+
+        if (maHoaDon) {
+            hoaDonStore.fetchHoaDon(maHoaDon);
+        }
+
+        return { hoaDonStore };
+    },
+    computed: {
+        hoaDon() {
+            return this.hoaDonStore.hoaDon;
+        }
+    },
     methods: {
-        isReturnStepDone(step) {
-            const trangThai = this.hoaDon.trangThai;
+        async huyDonHang() {
+            const xacNhan = window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');
 
-            // Nhánh trả hàng thất bại
-            if (trangThai === 'TRA_HANG_KHONG_THANH_CONG') {
-                return ['YEU_CAU_TRA_HANG', 'TRA_HANG_KHONG_THANH_CONG'].includes(step);
+            if (!xacNhan) return;
+
+            try {
+                await this.hoaDonStore.huyDonHang(this.hoaDon.maHoaDon);
+                await this.hoaDonStore.fetchHoaDon(this.hoaDon.maHoaDon); // cập nhật lại trạng thái
+
+                this.$toast?.add?.({
+                    severity: 'success',
+                    summary: 'Thành công',
+                    detail: 'Đã hủy đơn hàng!',
+                    life: 3000
+                });
+            } catch (err) {
+                console.error(err);
+                this.$toast?.add?.({
+                    severity: 'error',
+                    summary: 'Thất bại',
+                    detail: 'Không thể hủy đơn hàng!',
+                    life: 3000
+                });
             }
-
-            // Nhánh trả hàng thành công
-            const steps = ['YEU_CAU_TRA_HANG', 'DA_TRA_HANG', 'DA_HOAN_TIEN'];
-            const indexCurrent = steps.indexOf(trangThai);
-            const indexStep = steps.indexOf(step);
-            return indexStep <= indexCurrent && indexStep !== -1;
-        },
-         getStatusColor(status) {
-            const map = {
-                CHO_XAC_NHAN: 'bg-yellow-200 text-yellow-800',
-                DA_XAC_NHAN: 'bg-blue-200 text-blue-800',
-                DANG_XU_LY: 'bg-purple-200 text-purple-800',
-                CHO_GIAO_HANG: 'bg-pink-200 text-pink-800',
-                DANG_GIAO_HANG: 'bg-indigo-200 text-indigo-800',
-                DA_GIAO_HANG: 'bg-green-200 text-green-800',
-                HOAN_THANH: 'bg-emerald-200 text-emerald-800',
-
-                DA_HUY: 'bg-red-200 text-red-800',
-                YEU_CAU_TRA_HANG: 'bg-yellow-300 text-yellow-800',
-                DA_TRA_HANG: 'bg-purple-300 text-purple-800',
-                TRA_HANG_KHONG_THANH_CONG: 'bg-red-300 text-red-800',
-                DA_HOAN_TIEN: 'bg-green-300 text-green-800'
-            };
-            return map[status] || 'bg-gray-300 text-gray-500';
         },
         formatDate(dateStr) {
             return new Date(dateStr).toLocaleString('vi-VN');
@@ -288,15 +272,54 @@ export default {
             };
             return map[status] || 'text-blue-800 font-semibold';
         },
+        getStatusColor(status) {
+            const map = {
+                CHO_XAC_NHAN: 'bg-yellow-200 text-yellow-800',
+                DA_XAC_NHAN: 'bg-blue-200 text-blue-800',
+                DANG_XU_LY: 'bg-purple-200 text-purple-800',
+                CHO_GIAO_HANG: 'bg-pink-200 text-pink-800',
+                DANG_GIAO_HANG: 'bg-indigo-200 text-indigo-800',
+                DA_GIAO_HANG: 'bg-green-200 text-green-800',
+                HOAN_THANH: 'bg-emerald-200 text-emerald-800',
+                DA_HUY: 'bg-red-200 text-red-800',
+                YEU_CAU_TRA_HANG: 'bg-yellow-300 text-yellow-800',
+                DA_TRA_HANG: 'bg-purple-300 text-purple-800',
+                TRA_HANG_KHONG_THANH_CONG: 'bg-red-300 text-red-800',
+                DA_HOAN_TIEN: 'bg-green-300 text-green-800'
+            };
+            return map[status] || 'bg-gray-300 text-gray-500';
+        },
         isStepDone(stepValue) {
-            const order = this.trangThaiSteps.map(s => s.value);
+            const order = [
+                'CHO_XAC_NHAN', 'DA_XAC_NHAN', 'DANG_XU_LY',
+                'CHO_GIAO_HANG', 'DANG_GIAO_HANG', 'DA_GIAO_HANG', 'HOAN_THANH'
+            ];
             const currentIndex = order.indexOf(this.hoaDon.trangThai);
             const stepIndex = order.indexOf(stepValue);
             return stepIndex <= currentIndex;
         },
+        isReturnStepDone(step) {
+            const trangThai = this.hoaDon.trangThai;
+
+            if (trangThai === 'TRA_HANG_KHONG_THANH_CONG') {
+                return ['YEU_CAU_TRA_HANG', 'TRA_HANG_KHONG_THANH_CONG'].includes(step);
+            }
+
+            const steps = ['YEU_CAU_TRA_HANG', 'DA_TRA_HANG', 'DA_HOAN_TIEN'];
+            const indexCurrent = steps.indexOf(trangThai);
+            const indexStep = steps.indexOf(step);
+            return indexStep <= indexCurrent && indexStep !== -1;
+        },
         isReturnInvolved() {
             return ['YEU_CAU_TRA_HANG', 'DA_TRA_HANG', 'TRA_HANG_KHONG_THANH_CONG', 'DA_HOAN_TIEN'].includes(this.hoaDon.trangThai);
         }
+    },
+    created() {
+    if (!this.hoaDon && this.$route.params.maHoaDon) {
+        this.hoaDonStore.fetchHoaDon(this.$route.params.maHoaDon).then(() => {
+            this.testInConsole(); // gọi để in
+        });
     }
+}
 };
 </script>

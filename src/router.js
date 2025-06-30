@@ -37,10 +37,11 @@ const routes = [
     component: ChiTietSanPham,
     props: true // Để truyền tham số vào component
   },
-  {
-  path: '/thanhCong',
+{
+  path: '/thanhCong/:maHoaDon',
   name: 'ThanhToanThanhCong',
-  component: () => import('../src/views/ThanhToanThanhCong.vue')
+  component: () => import('../src/views/ThanhToanThanhCong.vue'),
+  props: true
 }
 
 ];

@@ -1,12 +1,18 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import "@fortawesome/fontawesome-free/css/all.css";
-import '../src/style.css'; // ✅ ok nếu bạn để style trong /src
+import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
-import { createPinia } from 'pinia'; // ✅ đã import đúng
+import "@fortawesome/fontawesome-free/css/all.css";
+import './style.css'; // hoặc '../src/style.css' nếu bạn đặt tên như vậy
 
 const app = createApp(App);
+
+const pinia = createPinia(); // ✅ tạo biến pinia
+pinia.use(piniaPluginPersistedstate); // ✅ rồi mới .use plugin
+
 app.use(router);
-app.use(createPinia()); // ✅ đã dùng pinia
+app.use(pinia); // ✅ đưa vào app
+
 app.mount('#app');
