@@ -42,7 +42,8 @@
               <p class="text-indigo-400 text-xs">
                 RAM: {{ item.sanPhamChiTiet.ram.moTaRam }} |
                 CPU: {{ item.sanPhamChiTiet.cpu.moTaCpu }} |
-                Màu: {{ item.sanPhamChiTiet.mauSac.moTaMauSac }}
+                Màu: {{ item.sanPhamChiTiet.mauSac.moTaMauSac }}|
+                Màn: {{ item.sanPhamChiTiet.manHinh.moTaManHinh }}
               </p>
 
               <div v-if="item.serialNumbers && item.serialNumbers.length > 0" class="text-xs text-indigo-600 mt-1">

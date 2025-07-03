@@ -18,11 +18,13 @@
     <div class="flex items-center gap-3">
       <button
         class="hidden md:inline-flex items-center gap-2 bg-indigo-300 text-white px-4 py-2 rounded-xl shadow hover:bg-indigo-400 transition text-sm font-semibold"
+        @click="goToLogin"
       >
         <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
       </button>
       <button
         class="hidden md:inline-flex items-center gap-2 border border-indigo-300 text-indigo-400 px-4 py-2 rounded-xl hover:bg-indigo-50 transition text-sm font-semibold"
+        @click="goToRegister"
       >
         <i class="fa-regular fa-user"></i> Đăng ký
       </button>
@@ -62,6 +64,12 @@ export default {
   methods: {
     goToCart() {
       this.$router.push('/gioHang');
+    },
+    goToLogin() {
+      this.$router.push('/dangNhap');
+    },
+    goToRegister() {
+      this.$router.push('/dangKy');
     },
   },
   mounted() {

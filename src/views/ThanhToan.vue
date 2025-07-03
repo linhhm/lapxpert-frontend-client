@@ -38,7 +38,8 @@
                         <p class="text-sm text-indigo-500">
                             RAM: {{ item.sanPhamChiTiet.ram?.moTaRam || item.sanPhamChiTiet.moTaRam || 'N/A' }} |
                             CPU: {{ item.sanPhamChiTiet.cpu?.moTaCpu || item.sanPhamChiTiet.moTaCpu || 'N/A' }} |
-                            Màu: {{ item.sanPhamChiTiet.mauSac?.moTaMauSac || item.sanPhamChiTiet.moTaMauSac || 'N/A' }}
+                            Màu: {{ item.sanPhamChiTiet.mauSac?.moTaMauSac || item.sanPhamChiTiet.moTaMauSac || 'N/A' }} |
+                            Màn: {{ item.sanPhamChiTiet.manHinh?.moTaManHinh || item.sanPhamChiTiet.moTaManHinh || 'N/A' }}
                         </p>
                         <p class="text-xs text-gray-600 mt-1" v-if="Array.isArray(item.serialNumbers)">
                             Seri:
@@ -222,10 +223,6 @@
 
 
             <div class="text-right">
-                <button @click="chonThemSanPham"
-                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-semibold">
-                    Chọn thêm sản phẩm
-                </button>
                 <button @click="huyThanhToan"
                     class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold rounded-md">
                     Hủy

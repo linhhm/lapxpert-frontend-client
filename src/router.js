@@ -8,6 +8,8 @@ import DotGiamGia from "../src/components/DotGiamGia.vue";
 import HoTro from "../src/components/HoTro.vue";
 import TraCuuDon from "../src/components/TraCuuDon.vue";
 import ChiTietSanPham from "../src/views/ChiTietSanPham.vue";
+import DangNhap from "../src/components/Login.vue";
+import DangKy from "../src/components/Register.vue";
 import TatCaPhieu from "../src/views/TatCaPhieu.vue";
 import TrangDotGiamGia from "../src/views/TrangDotGiamGia.vue";
 import HoTroKhachHang from "../src/views/HoTroKhachHang.vue";
@@ -23,26 +25,32 @@ const routes = [
   { path: '/phieuGiamGia', component: PhieuGiamGia },
   { path: '/dotGiamGia', component: DotGiamGia },
   { path: '/hoTro', component: HoTro },
-  { path: '/sanPham',name: 'SanPham', component: SanPham },
+  { path: '/sanPham', name: 'SanPham', component: SanPham },
   { path: '/tatCaPhieuGiamGia', component: TatCaPhieu },
+  { path: '/dangNhap', component: DangNhap },
+  { path: '/dangKy', component: DangKy },
   { path: '/trangDotGiamGia', component: TrangDotGiamGia },
-  { path: '/chitietsanPham', component: ChiTietSanPham },
+  {
+    path: '/chiTietSanPham/:id',
+    component: ChiTietSanPham,
+    props: true
+  },
   { path: '/hoTroKhachHang', component: HoTroKhachHang },
   { path: '/chat', component: Chat },
-  { path: '/gioHang',name: 'GioHang', component: GioHang },
-  { path: '/thanhToan',name: 'ThanhToan', component: ThanhToan },
-  { path: '/traCuuDon',name: 'TraCuuDon', component: TraCuuDon },
+  { path: '/gioHang', name: 'GioHang', component: GioHang },
+  { path: '/thanhToan', name: 'ThanhToan', component: ThanhToan },
+  { path: '/traCuuDon', name: 'TraCuuDon', component: TraCuuDon },
   {
     path: '/chiTietSanPham/:id',
     component: ChiTietSanPham,
     props: true // Để truyền tham số vào component
   },
-{
-  path: '/thanhCong/:maHoaDon',
-  name: 'ThanhToanThanhCong',
-  component: () => import('../src/views/ThanhToanThanhCong.vue'),
-  props: true
-}
+  {
+    path: '/thanhCong/:maHoaDon',
+    name: 'ThanhToanThanhCong',
+    component: () => import('../src/views/ThanhToanThanhCong.vue'),
+    props: true
+  }
 
 ];
 

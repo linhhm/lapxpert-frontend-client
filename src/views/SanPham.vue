@@ -1,7 +1,7 @@
 <template>
   <div class="p-6 bg-gradient-to-b from-gray-100 to-white min-h-screen">
-    <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center uppercase tracking-wide">Tất cả sản phẩm</h1>
-
+    <h1 class="text-4xl font-extrabold text-blue-900 mb-8 text-center uppercase tracking-widest drop-shadow-sm">🛍️ Tất
+      cả sản phẩm</h1>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <!-- Sidebar lọc -->
       <aside class="bg-white p-6 rounded-2xl shadow-xl md:col-span-1 space-y-6 border border-gray-200">
@@ -46,11 +46,6 @@
             </div>
           </div>
         </div>
-
-
-
-
-
         <div>
           <label class="block font-semibold text-gray-700 mb-2">Tìm kiếm theo tên</label>
           <input v-model="filters.search" type="text" placeholder="Tìm sản phẩm"
@@ -64,11 +59,10 @@
           </button>
         </div>
       </aside>
-
       <!-- Danh sách sản phẩm -->
       <section class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="sp in products" :key="sp.id"
-          class="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between border border-gray-100">
+        <div v-for="sp in paginatedProducts" :key="sp.id"
+          class="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between border border-gray-100 h-[420px]">
           <div>
             <router-link :to="`/chiTietSanPham/${sp.id}`">
               <img :src="getImageUrl(sp.hinhAnh)" alt=""
@@ -82,16 +76,17 @@
               {{ formatPrice(getMinPrice(sp.chiTietSanPhams)) }} ₫ - {{ formatPrice(getMaxPrice(sp.chiTietSanPhams)) }}
               ₫
             </p>
-
-
-
           </div>
           <div class="flex gap-2 mt-auto">
+            <!-- Nút Mua ngay -->
             <button @click="muaNgay(sp)"
-              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-semibold">Mua
-              ngay</button>
+              class="flex-1 bg-purple-200 text-purple-800 hover:bg-purple-300 py-2 px-4 rounded-xl font-semibold shadow-sm transition-all duration-300 text-sm">
+              Mua ngay
+            </button>
+
+            <!-- Nút Giỏ hàng -->
             <button @click="themVaoGio(sp)"
-              class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-1">
+              class="flex-1 bg-blue-100 text-blue-800 hover:bg-blue-200 py-2 px-4 rounded-xl font-semibold flex items-center justify-center gap-1 shadow-sm transition-all duration-300 text-sm">
               <i class="fa-solid fa-cart-shopping"></i> Giỏ
             </button>
           </div>
@@ -138,7 +133,14 @@
                 ]" :style="{ backgroundColor: getColorHex(color.name) }"></div>
             </div>
           </div>
-
+          <div>
+            <label class="font-semibold text-gray-700 block mb-1">Màn hình</label>
+            <select v-model="selectedScreen" class="w-full border p-2 rounded-lg">
+              <option disabled value="">Chọn Màn hình</option>
+              <option v-for="manHinh in uniqueScreenWithLabel" :key="manHinh.id" :value="manHinh.id">{{ manHinh.name }}
+              </option>
+            </select>
+          </div>
           <div>
             <label class="font-semibold text-gray-700 block mb-1">CPU</label>
             <select v-model="selectedCpu" class="w-full border p-2 rounded-lg">
@@ -186,8 +188,8 @@
         </div>
 
         <button @click="xacNhanCauHinh"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">
-          Xác nhận
+          class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 py-2 rounded-xl font-semibold transition-all duration-300">
+           Xác nhận
         </button>
       </div>
     </div>
@@ -222,12 +224,13 @@ export default {
       sanPhamDangChon: null,
       chiTietSanPhams: [],
       selectedRam: '',
+      selectedScreen: '',
       selectedColor: '',
       selectedCpu: '',
       selectedGpu: '',
       selectedBoNho: '',
       currentPage: 1,
-      itemsPerPage: 8,
+      itemsPerPage: 9,
       filters: {
         priceMin: 0,
         priceMax: 60000000,
@@ -298,9 +301,21 @@ export default {
           }
           return false;
         })
-        .map(ct => ({ id: ct.cpuId, name: ct.moTaCpu || `CPU ${ct.cpuId}` }));
+        .map(ct => ({ id: ct.cpuId, name: ct.moTaCpu || `Màn ${ct.cpuId}` }));
     },
-
+    uniqueScreenWithLabel() {
+      const seen = new Set();
+      return this.chiTietSanPhams
+        .filter(ct => {
+          if (!seen.has(ct.manHinhId)) {
+            seen.add(ct.manHinhId);
+            return true;
+          }
+          return false;
+        })
+        .map(ct => ({ id: ct.manHinhId, name: ct.moTaManHinh || `Màn ${ct.manHinhId}` }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    },
     uniqueGpusWithLabel() {
       const seen = new Set();
       return this.chiTietSanPhams
@@ -348,6 +363,7 @@ export default {
         ct.mauSacId === this.selectedColor &&
         ct.cpuId === this.selectedCpu &&
         ct.gpuId === this.selectedGpu &&
+        ct.manHinhId === this.selectedScreen &&
         ct.boNhoId === this.selectedBoNho
       );
     },
