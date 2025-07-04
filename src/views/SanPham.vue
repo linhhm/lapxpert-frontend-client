@@ -72,6 +72,15 @@
             <p class="text-gray-500 text-sm mb-1">
               {{ sp.thuongHieu?.tenThuongHieu || 'Không rõ hãng' }}
             </p>
+            <p class="text-gray-500 text-sm mb-1">
+              <span v-if="sp.sanPhamDanhMucs?.length">
+                <span v-for="(dm, index) in sp.sanPhamDanhMucs" :key="index">
+                  {{ dm.danhMuc?.moTaDanhMuc }}
+                  <span v-if="index < sp.sanPhamDanhMucs.length - 1">, </span>
+                </span>
+              </span>
+              <span v-else>Không rõ danh mục</span>
+            </p>
             <p class="text-blue-600 font-bold text-lg mb-3">
               {{ formatPrice(getMinPrice(sp.chiTietSanPhams)) }} ₫ - {{ formatPrice(getMaxPrice(sp.chiTietSanPhams)) }}
               ₫
@@ -189,7 +198,7 @@
 
         <button @click="xacNhanCauHinh"
           class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 py-2 rounded-xl font-semibold transition-all duration-300">
-           Xác nhận
+          Xác nhận
         </button>
       </div>
     </div>
@@ -244,9 +253,9 @@ export default {
         { label: "Macbook", value: "macbook" }
       ],
       brandOptions: [
-        { label: "Asus", value: "asus" },
+        { label: "Lenovo", value: "lenovo" },
         { label: "Dell", value: "dell" },
-        { label: "Apple", value: "mac" },
+        { label: "Apple", value: "apple" },
         { label: "MSI", value: "msi" }
       ]
     }
@@ -378,15 +387,23 @@ export default {
   methods: {
     getColorHex(name) {
       const mapColor = {
-        "Đỏ": "#ff4d4f",
-        "Xanh lá": "#52c41a",
-        "Xanh dương": "#1890ff",
-        "Đen": "#000000",
-        "Trắng": "#ffffff",
-        "Vàng": "#fadb14",
-        "Tím": "#722ed1",
-        "Cam": "#fa8c16",
-        // ... thêm màu khác nếu cần
+        'Đen': '#000000',
+        'Trắng': '#ffffff',
+        'Xám': '#808080',
+        'Đỏ': '#e74c3c',
+        'Hồng': '#ff69b4',
+        'Tím': '#9b59b6',
+        'Xanh': '#3498db',
+        'Xanh lá': '#2ecc71',
+        'Vàng': '#f1c40f',
+        'Cam': '#e67e22',
+        'Nâu': '#8b4513',
+        'Xanh ngọc': '#1abc9c',
+        'Bạc': '#c0c0c0',
+        'Xanh đậm': '#0d47a1',
+        'Hồng nhạt': '#ffc0cb',
+        'Xanh pastel': '#a8dadc',
+        'Hồng pastel': '#f9c6d0',
       };
       return mapColor[name] || "#ccc"; // fallback màu xám nhạt nếu không tìm thấy
     },
